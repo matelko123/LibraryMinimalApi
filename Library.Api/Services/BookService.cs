@@ -24,7 +24,9 @@ public class BookService : IBookService
 
     public async Task<Book?> GetByIsbnAsync(string isbn)
     {
-        throw new NotImplementedException();
+        using var connection = await _connectionFactory.CreateConnectionAsync();
+        return await connection.QuerySingleOrDefaultAsync<Book>(
+            "SELECT * FROM Books WHERE Isbn = @Isbn LIMIT 1", new { Isbn = isbn});
     }
 
     public async Task<IEnumerable<Book>> GetAllAsync()
