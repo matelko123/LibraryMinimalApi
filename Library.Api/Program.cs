@@ -40,6 +40,11 @@ app.MapPost("books", async (Book book,
         });
 });
 
+app.MapGet("books", async (IBookService bookService) =>
+{
+    var books = await bookService.GetAllAsync();
+    return books;
+});
 
 // Db init
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
