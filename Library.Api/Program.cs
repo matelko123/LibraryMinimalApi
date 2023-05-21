@@ -39,14 +39,34 @@ app.MapPost("books", async (Book book,
             new ("Isbn", "A book with that Isbn already exists.")
         });
 });
-
-app.MapGet("books", async (IBookService bookService) =>
+app.MapPut("books/{isbn}", async (string isbn, Book book, 
+    IBookService bookService, IValidator<Book> validator) =>
 {
+    book.Isbn = isbn;
+    var validationResult = await validator.ValidateAsync(book);
+    if (!validationResult.IsValid)
+    {
+        return Results.BadRequest(validationResult.Errors);
+    }
+
+    var updated = await bookService.UpdateAsync(book);
+    return updated
+        ? Results.Ok(book)
+        : Results.NotFound();
+});
+app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
+{
+    if (!string.IsNullOrEmpty(searchTerm))
+    {
+        var matchedBooks = await bookService.SearchByTitleAsync(searchTerm);
+        return Results.Ok(matchedBooks);
+    }
+    
     var books = await bookService.GetAllAsync();
-    return books;
+    return Results.Ok(books);
 });
 
-app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
+app.MapGet("book/{isbn}", async (string isbn, IBookService bookService) =>
 {
     var book = await bookService.GetByIsbnAsync(isbn);
     return book is not null
