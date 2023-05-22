@@ -48,7 +48,11 @@ app.MapPost("books",
         {
             new ("Isbn", "A book with that Isbn already exists.")
         });
-}).WithName("CreateBook");
+}).WithName("CreateBook")
+    .WithTags("Books")
+    .Accepts<Book>("application/json")
+    .Produces<Book>(StatusCodes.Status201Created)
+    .Produces<IEnumerable<ValidationFailure>>(StatusCodes.Status400BadRequest);
 
 app.MapPut("books/{isbn}", async (string isbn, Book book, 
     IBookService bookService, IValidator<Book> validator) =>
@@ -64,7 +68,12 @@ app.MapPut("books/{isbn}", async (string isbn, Book book,
     return updated
         ? Results.Ok(book)
         : Results.NotFound();
-}).WithName("UpdateBook");
+}).WithName("UpdateBook")
+    .WithTags("Books")
+    .Accepts<Book>("application/json")
+    .Produces<Book>(StatusCodes.Status200OK)
+    .Produces<IEnumerable<ValidationFailure>>(StatusCodes.Status400BadRequest)
+    .Produces(StatusCodes.Status404NotFound);
 
 app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
 {
@@ -76,7 +85,9 @@ app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
     
     var books = await bookService.GetAllAsync();
     return Results.Ok(books);
-}).WithName("GetBooks");
+}).WithName("GetBooks")
+    .WithTags("Books")
+    .Produces<IEnumerable<Book>>(StatusCodes.Status200OK);
 
 app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
 {
@@ -84,7 +95,10 @@ app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
     return book is not null
         ? Results.Ok(book)
         : Results.NotFound();
-}).WithName("GetBook");
+}).WithName("GetBook")
+    .WithTags("Books")
+    .Produces<Book>(StatusCodes.Status200OK)
+    .Produces(StatusCodes.Status404NotFound);
 
 app.MapDelete("books/{isbn}", async (string isbn, IBookService bookService) =>
 {
@@ -92,7 +106,10 @@ app.MapDelete("books/{isbn}", async (string isbn, IBookService bookService) =>
     return deleted
         ? Results.NoContent()
         : Results.NotFound();
-}).WithName("DeleteBook");
+}).WithName("DeleteBook")
+    .WithTags("Books")
+    .Produces(StatusCodes.Status204NoContent)
+    .Produces(StatusCodes.Status404NotFound);
 
 // Db init
 var databaseInitializer = app.Services.GetRequiredService<DatabaseInitializer>();
