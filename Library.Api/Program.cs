@@ -78,7 +78,7 @@ app.MapGet("books", async (IBookService bookService, string? searchTerm) =>
     return Results.Ok(books);
 }).WithName("GetBooks");
 
-app.MapGet("book/{isbn}", async (string isbn, IBookService bookService) =>
+app.MapGet("books/{isbn}", async (string isbn, IBookService bookService) =>
 {
     var book = await bookService.GetByIsbnAsync(isbn);
     return book is not null
@@ -86,7 +86,7 @@ app.MapGet("book/{isbn}", async (string isbn, IBookService bookService) =>
         : Results.NotFound();
 }).WithName("GetBook");
 
-app.MapDelete("book/{isbn}", async (string isbn, IBookService bookService) =>
+app.MapDelete("books/{isbn}", async (string isbn, IBookService bookService) =>
 {
     var deleted = await bookService.DeleteAsync(isbn);
     return deleted
