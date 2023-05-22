@@ -16,7 +16,7 @@ public class BookService : IBookService
     public async Task<bool> CreateAsync(Book book)
     {
         var existingBook = await GetByIsbnAsync(book.Isbn);
-        if (existingBook is null)
+        if (existingBook is not null)
         {
             return false;
         }
