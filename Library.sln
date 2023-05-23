@@ -2,6 +2,12 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Api", "Library.Api\Library.Api.csproj", "{55E4FC32-78E3-4C9A-9B10-4A9DE3ECC257}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{9D779158-C538-4605-B943-AD8B002E1069}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3B9CE3EA-E98E-4CB2-9617-E977D254A546}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Library.Api.Tests.Integration", "Library.Api.Tests.Integration\Library.Api.Tests.Integration.csproj", "{E83DDB45-70A9-46D3-BD45-4A66FD638FB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +18,13 @@ Global
 		{55E4FC32-78E3-4C9A-9B10-4A9DE3ECC257}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55E4FC32-78E3-4C9A-9B10-4A9DE3ECC257}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55E4FC32-78E3-4C9A-9B10-4A9DE3ECC257}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E83DDB45-70A9-46D3-BD45-4A66FD638FB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E83DDB45-70A9-46D3-BD45-4A66FD638FB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E83DDB45-70A9-46D3-BD45-4A66FD638FB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E83DDB45-70A9-46D3-BD45-4A66FD638FB3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{55E4FC32-78E3-4C9A-9B10-4A9DE3ECC257} = {9D779158-C538-4605-B943-AD8B002E1069}
+		{E83DDB45-70A9-46D3-BD45-4A66FD638FB3} = {3B9CE3EA-E98E-4CB2-9617-E977D254A546}
 	EndGlobalSection
 EndGlobal

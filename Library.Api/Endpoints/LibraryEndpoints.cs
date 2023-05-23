@@ -58,7 +58,7 @@ public class LibraryEndpoints : IEndpoints
 
         var created = await bookService.CreateAsync(book);
         return created
-            ? Results.CreatedAtRoute("GetBook", new { isbn = book.Isbn })
+            ? Results.CreatedAtRoute("GetBook", new { isbn = book.Isbn }, book)
             : Results.BadRequest(new List<ValidationFailure>
             {
                 new("Isbn", "A book with that Isbn already exists.")
