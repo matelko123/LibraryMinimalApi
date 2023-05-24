@@ -6,9 +6,10 @@ using Xunit;
 
 namespace Library.Api.Tests.Integration;
 
-public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMarker>>
+public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMarker>>, IAsyncLifetime
 {
     private readonly WebApplicationFactory<IApiMarker> _factory;
+    private readonly List<string> _createdIsbns = new ();
 
     public LibraryEndpointsTests(WebApplicationFactory<IApiMarker> factory)
     {
@@ -25,6 +26,7 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         // Act
         var result = await httpClient.PostAsJsonAsync("/books", book);
         var createdBook = await result.Content.ReadFromJsonAsync<Book>();
+        _createdIsbns.Add(book.Isbn);
         
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -60,6 +62,7 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
 
         // Act
         await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
         var result = await httpClient.PostAsJsonAsync("/books", book);
         var errors = await result.Content.ReadFromJsonAsync<IEnumerable<ValidationError>>();
         var error = errors!.Single();
@@ -83,4 +86,15 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
 
     private string GenerateIsbn()
         => $"{Random.Shared.Next(100, 999)}-{Random.Shared.Next(1000000000, 2100999999)}";
+
+    public Task InitializeAsync() => Task.CompletedTask;
+
+    public async Task DisposeAsync()
+    {
+        var httpClient = _factory.CreateClient();
+        foreach (string createdIsbn in _createdIsbns)
+        {
+            await httpClient.DeleteAsync($"books/{createdIsbn}");
+        }
+    }
 }
