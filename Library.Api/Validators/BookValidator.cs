@@ -13,7 +13,6 @@ public class BookValidator : AbstractValidator<Book>
 
         RuleFor(book => book.Title).NotEmpty();
         RuleFor(book => book.ShortDescription).NotEmpty();
-        RuleFor(book => book.Title).NotEmpty();
         RuleFor(book => book.Author).NotEmpty();
         RuleFor(book => book.PageCount).GreaterThan(0);
     }
