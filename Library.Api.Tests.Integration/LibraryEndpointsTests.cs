@@ -59,10 +59,10 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         // Arrange
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
-
-        // Act
         await httpClient.PostAsJsonAsync("/books", book);
         _createdIsbns.Add(book.Isbn);
+
+        // Act
         var result = await httpClient.PostAsJsonAsync("/books", book);
         var errors = await result.Content.ReadFromJsonAsync<IEnumerable<ValidationError>>();
         var error = errors!.Single();
@@ -73,6 +73,93 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         error.ErrorMessage.Should().Be("A book with that Isbn already exists.");
     }
 
+
+    [Fact]
+    public async Task GetBook_ReturnsBook_WhenBookExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+
+        // Act
+        var result = await httpClient.GetAsync($"/books/{book.Isbn}");
+        var existingBook = await result.Content.ReadFromJsonAsync<Book>();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        existingBook.Should().BeEquivalentTo(book);
+    }
+    
+    [Fact]
+    public async Task GetBook_ReturnsNotFound_WhenBookDoesNotExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var isbn = GenerateIsbn();
+
+        // Act
+        var result = await httpClient.GetAsync($"/books/{isbn}");
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetAllBooks_ReturnsAllBooks_WhenBooksExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+        var books = new List<Book> { book };
+
+        // Act
+        var result = await httpClient.GetAsync($"/books");
+        var returnedBooks = await result.Content.ReadFromJsonAsync<IEnumerable<Book>>();
+        
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        returnedBooks.Should().BeEquivalentTo(books);
+    }
+    
+    [Fact]
+    public async Task GetAllBooks_ReturnsNoBooks_WhenNoBooksExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+
+        // Act
+        var result = await httpClient.GetAsync($"/books");
+        var returnedBooks = await result.Content.ReadFromJsonAsync<IEnumerable<Book>>();
+        
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        returnedBooks.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SearchBooks_ReturnsBooks_WhenTitleMatches()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+        var books = new List<Book> { book };
+
+        // Act
+        var result = await httpClient.GetAsync($"/books?searchTerm={book.Title}");
+        var returnedBooks = await result.Content.ReadFromJsonAsync<IEnumerable<Book>>();
+        
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        returnedBooks.Should().BeEquivalentTo(books);
+    }
+    
+    
     private Book GenerateBook(string title = "The testing integration book")
         => new Book
         {
