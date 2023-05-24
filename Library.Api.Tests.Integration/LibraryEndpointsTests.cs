@@ -32,6 +32,44 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         result.Headers.Location.Should().Be($"{httpClient.BaseAddress}books/{book.Isbn}");
     }
 
+    [Fact]
+    public async Task CreateBook_Fails_WhenIsbnIsInvalid()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        book.Isbn = "Invalid";
+
+        // Act
+        var result = await httpClient.PostAsJsonAsync("/books", book);
+        var errors = await result.Content.ReadFromJsonAsync<IEnumerable<ValidationError>>();
+        var error = errors!.Single();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.PropertyName.Should().Be("Isbn");
+        error.ErrorMessage.Should().Be("Value was not a valid ISBN-13");
+    }
+    
+    [Fact]
+    public async Task CreateBook_Fails_WhenBookExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+
+        // Act
+        await httpClient.PostAsJsonAsync("/books", book);
+        var result = await httpClient.PostAsJsonAsync("/books", book);
+        var errors = await result.Content.ReadFromJsonAsync<IEnumerable<ValidationError>>();
+        var error = errors!.Single();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.PropertyName.Should().Be("Isbn");
+        error.ErrorMessage.Should().Be("A book with that Isbn already exists.");
+    }
+
     private Book GenerateBook(string title = "The testing integration book")
         => new Book
         {
