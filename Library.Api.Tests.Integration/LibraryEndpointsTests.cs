@@ -73,7 +73,6 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         error.ErrorMessage.Should().Be("A book with that Isbn already exists.");
     }
 
-
     [Fact]
     public async Task GetBook_ReturnsBook_WhenBookExists()
     {
@@ -158,7 +157,61 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
         result.StatusCode.Should().Be(HttpStatusCode.OK);
         returnedBooks.Should().BeEquivalentTo(books);
     }
+
+    [Fact]
+    public async Task UpdateBook_UpdateBook_WhenDataIsCorrect()
+    {
+        
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+
+        // Act
+        book.PageCount = 69;
+        var result = await httpClient.PutAsJsonAsync($"/books/{book.Isbn}", book);
+        var updatedBook = await result.Content.ReadFromJsonAsync<Book>();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.OK);
+        updatedBook.Should().BeEquivalentTo(book);
+    }
     
+    [Fact]
+    public async Task UpdateBook_DoesNotUpdateBook_WhenDataIsIncorrect()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+
+        // Act
+        book.Title = string.Empty;
+        var result = await httpClient.PutAsJsonAsync($"/books/{book.Isbn}", book);
+        var errors = await result.Content.ReadFromJsonAsync<IEnumerable<ValidationError>>();
+        var error = errors!.Single();
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        error.PropertyName.Should().Be("Title");
+        error.ErrorMessage.Should().Be("Pole 'Title' nie może być puste.");
+    }
+    
+    [Fact]
+    public async Task UpdateBook_ReturnsNotFound_WhenBookDoesNotExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+
+        // Act
+        var result = await httpClient.PutAsJsonAsync($"/books/{book.Isbn}", book);
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
     
     private Book GenerateBook(string title = "The testing integration book")
         => new Book
