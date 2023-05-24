@@ -161,7 +161,6 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
     [Fact]
     public async Task UpdateBook_UpdateBook_WhenDataIsCorrect()
     {
-        
         // Arrange
         var httpClient = _factory.CreateClient();
         var book = GenerateBook();
@@ -211,6 +210,36 @@ public class LibraryEndpointsTests : IClassFixture<WebApplicationFactory<IApiMar
 
         // Assert
         result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteBook_ReturnsNotFound_WhenBookDoesNotExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var isbn = GenerateIsbn();
+
+        // Act
+        var result = await httpClient.DeleteAsync($"/books/{isbn}");
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+    
+    [Fact]
+    public async Task DeleteBook_ReturnsNoContent_WhenBookExists()
+    {
+        // Arrange
+        var httpClient = _factory.CreateClient();
+        var book = GenerateBook();
+        await httpClient.PostAsJsonAsync("/books", book);
+        _createdIsbns.Add(book.Isbn);
+
+        // Act
+        var result = await httpClient.DeleteAsync($"/books/{book.Isbn}");
+
+        // Assert
+        result.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
     
     private Book GenerateBook(string title = "The testing integration book")
